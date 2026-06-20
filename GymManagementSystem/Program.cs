@@ -1,15 +1,31 @@
+using GymManagementSystem.Data.Contexts;
+using GymManagementSystem.Data.Seeder;
+using GymManagementSystem.DataAccess.Repositories;
+using Microsoft.EntityFrameworkCore;
+
 namespace GymManagementSystem
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddScoped<IPlanRepository, PlanRepository>();
+            builder.Services.AddDbContext<GymDbContext>(option =>
+            {
+                option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
+
+            await using var scope = app.Services.CreateAsyncScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<GymDbContext>();
+            await DatabaseSeeder.SeedAllAsync(dbContext);
+
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
