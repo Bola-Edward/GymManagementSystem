@@ -1,4 +1,5 @@
-﻿using GymManagementSystem.Models;
+﻿using GymManagementSystem.DAL.Models;
+using GymManagementSystem.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GymManagementSystem.Data.Contexts
@@ -13,5 +14,6 @@ namespace GymManagementSystem.Data.Contexts
         }
 
         public DbSet<Plan> Plans { get; set; }
+        public DbSet<Category> Categories { get; set; }
     }
 }
