@@ -19,5 +19,6 @@ namespace GymManagementSystem.Data.Contexts
         public DbSet<HealthRecord> HealthRecords { get; set; }
         public DbSet<MemberShip> Memberships { get; set; }
         public DbSet<Session> Sessions { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
     }
 }
