@@ -23,7 +23,10 @@ namespace GymManagementSystem.DAL.Data.Configuration
                 .HasConversion<string>()
                 .HasMaxLength(50);
 
-
+            builder.HasOne(x => x.Member)
+                .WithOne(m => m.HealthRecord)
+                .HasForeignKey<HealthRecord>(x => x.MemberId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.ToTable(t =>
             {

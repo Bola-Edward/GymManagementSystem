@@ -17,6 +17,16 @@ namespace GymManagementSystem.DAL.Data.Configuration
             builder.Property(m => m.EndDate)
                 .IsRequired();
 
+            builder.HasOne(m => m.Member)
+                .WithMany(m => m.Memberships)
+                .HasForeignKey(m => m.MemberId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(m => m.Plan)
+                .WithMany(p => p.MemberShips)
+                .HasForeignKey(m => m.PlanId)
+                .OnDelete(DeleteBehavior.Cascade);
+
 
             builder.ToTable(t =>
             {

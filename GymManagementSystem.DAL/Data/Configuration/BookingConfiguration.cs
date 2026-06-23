@@ -12,10 +12,26 @@ namespace GymManagementSystem.DAL.Data.Configuration
         public void Configure(EntityTypeBuilder<Booking> builder)
         {
 
-
             builder.Property(x => x.IsAttended)
                 .IsRequired()
                 .HasDefaultValue(false);
+
+            builder.HasOne(x => x.Member)
+                .WithMany(x => x.Bookings)
+                .HasForeignKey(x => x.MemberId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(x => x.Session)
+                .WithMany(x => x.Bookings)
+                .HasForeignKey(x => x.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+            builder.HasIndex(x => new
+            {
+                x.MemberId,
+                x.SessionId
+            }).IsUnique();
 
 
             builder.ToTable(t =>

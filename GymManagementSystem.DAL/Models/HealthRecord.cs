@@ -7,6 +7,8 @@ namespace GymManagementSystem.DAL.Models
         public decimal Height { get; set; }
         public decimal Weight { get; set; }
         public BloodType BloodType { get; set; }
+        public int MemberId { get; set; }
+        public Member Member { get; set; } = null!;
 
     }
 }
