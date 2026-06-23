@@ -12,7 +12,6 @@ namespace GymManagementSystem.DAL.Data.Configuration
         public virtual void Configure(EntityTypeBuilder<T> builder)
         {
 
-
             builder.Property(u => u.Name)
                 .HasMaxLength(100);
 
@@ -45,9 +44,6 @@ namespace GymManagementSystem.DAL.Data.Configuration
                 t.HasCheckConstraint("CK_User_Phone",
                     "LEN([Phone]) = 11 AND [Phone] LIKE '01[0125]%'");
             });
-
-
-
 
         }
     }

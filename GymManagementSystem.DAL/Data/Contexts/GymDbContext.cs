@@ -6,11 +6,18 @@ namespace GymManagementSystem.Data.Contexts
 {
     public class GymDbContext : DbContext
     {
+        public GymDbContext(DbContextOptions options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Apply all configurations from the assembly containing GymDbContext
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(GymDbContext).Assembly);
+
+            modelBuilder.Entity<User>().HasDiscriminator<string>("UserType")
+            .HasValue<Member>("Member")
+            .HasValue<Trainer>("Trainer");
+
+            modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);
         }
 
         public DbSet<Plan> Plans { get; set; }
