@@ -1,3 +1,4 @@
+using GymManagementSystem.DAL.Interceptors;
 using GymManagementSystem.Data.Contexts;
 using GymManagementSystem.Data.Seeder;
 using GymManagementSystem.DataAccess.Repositories;
@@ -15,10 +16,12 @@ namespace GymManagementSystem
             builder.Services.AddDbContext<GymDbContext>(option =>
             {
                 option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+                option.AddInterceptors(new AuditColumnsInterceptor());
             });
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddSingleton<AuditColumnsInterceptor>();
 
             var app = builder.Build();
 
