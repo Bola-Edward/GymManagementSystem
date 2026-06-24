@@ -1,3 +1,4 @@
+using GymManagementSystem.BLL;
 using GymManagementSystem.DAL;
 using GymManagementSystem.DAL.Interceptors;
 using GymManagementSystem.Data.Contexts;
@@ -23,7 +24,7 @@ namespace GymManagementSystem
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             builder.Services.AddGymDataAccess(connectionString);
-
+            builder.Services.AddBusinessLogic();
 
             var app = builder.Build();
 
