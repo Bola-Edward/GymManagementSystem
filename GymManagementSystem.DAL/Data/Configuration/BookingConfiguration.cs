@@ -31,7 +31,7 @@ namespace GymManagementSystem.DAL.Data.Configuration
             {
                 x.MemberId,
                 x.SessionId
-            }).IsUnique();
+            }).IsUnique().HasFilter("[IsDeleted] = 0");
 
 
             builder.ToTable(t =>

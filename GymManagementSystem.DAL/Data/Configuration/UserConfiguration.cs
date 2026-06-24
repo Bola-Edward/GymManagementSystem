@@ -1,15 +1,13 @@
 ﻿using GymManagementSystem.DAL.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace GymManagementSystem.DAL.Data.Configuration
+
+namespace GymManagementSystem.DataAccess.Data.Configuration
 {
-    public class UserConfiguration<T> : IEntityTypeConfiguration<T> where T : User
+    public class UserConfiguration : IEntityTypeConfiguration<User>
     {
-        public virtual void Configure(EntityTypeBuilder<T> builder)
+        public void Configure(EntityTypeBuilder<User> builder)
         {
 
             builder.Property(u => u.Name)
@@ -35,8 +33,8 @@ namespace GymManagementSystem.DAL.Data.Configuration
                 .HasColumnName("BuildingNumber");
             });
 
-            builder.HasIndex(u => u.Email).IsUnique();
-            builder.HasIndex(u => u.Phone).IsUnique();
+            builder.HasIndex(u => u.Email).IsUnique().HasFilter("[IsDeleted] = 0"); ;
+            builder.HasIndex(u => u.Phone).IsUnique().HasFilter("[IsDeleted] = 0"); ;
 
 
             builder.ToTable(t =>
@@ -45,7 +43,14 @@ namespace GymManagementSystem.DAL.Data.Configuration
                     "LEN([Phone]) = 11 AND [Phone] LIKE '01[0125]%'");
             });
 
+            builder.HasDiscriminator<string>("UserType")
+                .HasValue<Member>("Member")
+                .HasValue<Trainer>("Trainer");
+
+            builder.HasQueryFilter(u => !u.IsDeleted);
         }
     }
+
+
 
 }

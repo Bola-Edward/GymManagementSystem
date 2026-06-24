@@ -25,7 +25,9 @@ namespace GymManagementSystem.Data.Configuration
             });
 
             builder.HasIndex(b => b.Name)
-                .IsUnique();
+                .IsUnique().HasFilter("[IsDeleted] = 0");
+
+            builder.HasQueryFilter(p => !p.IsDeleted);
         }
     }
 }
