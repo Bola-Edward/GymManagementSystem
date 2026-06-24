@@ -1,4 +1,5 @@
 ﻿using GymManagementSystem.DAL.Interceptors;
+using GymManagementSystem.DAL.Repositories;
 using GymManagementSystem.Data.Contexts;
 using GymManagementSystem.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace GymManagementSystem.DAL
             });
 
             services.AddScoped<IPlanRepository, PlanRepository>();
+            services.AddScoped<IMemberRepository, MemberRepository>();
 
             return services;
         }
