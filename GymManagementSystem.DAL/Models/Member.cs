@@ -7,7 +7,7 @@ namespace GymManagementSystem.DAL.Models
     public class Member : User
     {
         public string? Photo { get; set; }
-        public DateTime JoinDate { get; set; }
+        public DateOnly JoinDate { get; set; }
 
         public HealthRecord HealthRecord { get; set; } = null!;
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
