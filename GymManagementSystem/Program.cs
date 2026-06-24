@@ -1,3 +1,4 @@
+using GymManagementSystem.DAL;
 using GymManagementSystem.DAL.Interceptors;
 using GymManagementSystem.Data.Contexts;
 using GymManagementSystem.Data.Seeder;
@@ -12,16 +13,17 @@ namespace GymManagementSystem
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddScoped<IPlanRepository, PlanRepository>();
-            builder.Services.AddDbContext<GymDbContext>(option =>
-            {
-                option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
-                option.AddInterceptors(new AuditColumnsInterceptor());
-            });
+
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-            builder.Services.AddSingleton<AuditColumnsInterceptor>();
+
+
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+            builder.Services.AddGymDataAccess(connectionString);
+
 
             var app = builder.Build();
 
