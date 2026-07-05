@@ -18,7 +18,8 @@ namespace GymManagementSystem.BLL
             services.AddScoped<IMemberRepository, MemberRepository>();
             services.AddScoped<IPlanRepository, PlanRepository>();
             services.AddScoped<IPlanService, PlanService>();
-
+            services.AddScoped<ITrainerRepository, TrainerRepository>();
+            services.AddScoped<ITrainerService, TrainerService>();
             return services;
         }
     }
