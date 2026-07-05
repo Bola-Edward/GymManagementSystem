@@ -14,6 +14,7 @@ namespace GymManagementSystem.BLL
         {
             services.AddScoped<IMemberService, MemberService>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IMemberRepository, MemberRepository>();
 
             return services;
         }
