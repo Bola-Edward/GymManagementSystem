@@ -3,7 +3,6 @@ using GymManagementSystem.DAL;
 using GymManagementSystem.DAL.Interceptors;
 using GymManagementSystem.Data.Contexts;
 using GymManagementSystem.Data.Seeder;
-using GymManagementSystem.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace GymManagementSystem

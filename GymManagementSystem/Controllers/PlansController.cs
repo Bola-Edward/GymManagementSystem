@@ -2,7 +2,6 @@
 using GymManagementSystem.BusinessLogic.ViewModels.PlanViewModels;
 using GymManagementSystem.DAL.Repositories;
 using GymManagementSystem.Data.Contexts;
-using GymManagementSystem.DataAccess.Repositories;
 using GymManagementSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

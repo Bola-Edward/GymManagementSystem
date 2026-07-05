@@ -5,21 +5,18 @@ using GymManagementSystem.DAL.Enums;
 using GymManagementSystem.DAL.Models;
 using GymManagementSystem.DAL.Models.ValueObjects;
 using GymManagementSystem.DAL.Repositories;
+using GymManagementSystem.DAL.Repositories.Interfaces;
 
 namespace GymManagementSystem.BusinessLogic.Services.Classes
 {
     public class MemberService : IMemberService
     {
 
-        private readonly IMemberRepository _memberRepository;
-        private readonly IRepository<HealthRecord> _healthRecordRepository;
-        private readonly IRepository<Booking> _bookingRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public MemberService(IMemberRepository memberRepository, IRepository<HealthRecord> healthRecordRepository, IRepository<Booking> bookingRepository)
+        public MemberService(IUnitOfWork unitOfWork)
         {
-            _memberRepository = memberRepository;
-            _healthRecordRepository = healthRecordRepository;
-            _bookingRepository = bookingRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<bool> CreateAsync(CreateMemberViewModel model, CancellationToken ct = default)
@@ -32,8 +29,8 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
 
             #endregion
 
-            var emailExists = await _memberRepository.IsEmailTakenAsync(model.Email, ct);
-            var phoneExists = await _memberRepository.IsPhoneTakenAsync(model.Phone, ct);
+            var emailExists = await _unitOfWork.Members.IsEmailTakenAsync(model.Email, ct);
+            var phoneExists = await _unitOfWork.Members.IsPhoneTakenAsync(model.Phone, ct);
 
             // Return False If Any Exists 
             if (emailExists || phoneExists) return false;
@@ -60,14 +57,14 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
                 }
             };
 
-            await _memberRepository.AddAsync(Member);
-            var rowsAffected = await _memberRepository.SaveChangesAsync();
+            await _unitOfWork.Members.AddAsync(Member);
+            var rowsAffected = await _unitOfWork.SaveChangesAsync();
             return rowsAffected > 0;
         }
 
         public async Task<IEnumerable<MemberViewModel>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            var members = await _memberRepository.GetAllAsync(cancellationToken);
+            var members = await _unitOfWork.Members.GetAllAsync(cancellationToken);
 
             return members.Select(m => new MemberViewModel
             {
@@ -84,7 +81,7 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
         public async Task<MemberDetailsViewModel?> GetDetailsAsync(int id, CancellationToken cancellationToken)
         {
             // get member with its membership and plan details
-            var member = await _memberRepository.GetWithMembershipsAsync(id: id, cancellationToken: cancellationToken);
+            var member = await _unitOfWork.Members.GetWithMembershipsAsync(id: id, cancellationToken: cancellationToken);
 
             if (member == null) return null;
 
@@ -110,7 +107,7 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
 
         public async Task<EditMemberViewModel?> GetForEditAsync(int id, CancellationToken cancellationToken = default)
         {
-            var member = await _memberRepository.GetByIdAsync(id, cancellationToken);
+            var member = await _unitOfWork.Members.GetByIdAsync(id, cancellationToken);
             if (member is null)
                 return null;
             else
@@ -128,7 +125,7 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
 
         public async Task<HealthRecordViewModel?> GetHealthRecordAsync(int id, CancellationToken cancellationToken = default)
         {
-            var record = await _healthRecordRepository.FindAsync(x => x.MemberId == id, cancellationToken: cancellationToken);
+            var record = await _unitOfWork.HealthRecords.FindAsync(x => x.MemberId == id, cancellationToken: cancellationToken);
             if (record is null) return null;
 
             else
@@ -143,12 +140,12 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
 
         public async Task<bool> UpdateAsync(int id, EditMemberViewModel model, CancellationToken cancellationToken = default)
         {
-            var member = await _memberRepository.GetByIdAsync(id, cancellationToken);
+            var member = await _unitOfWork.Members.GetByIdAsync(id, cancellationToken);
             if (member is null) return false;
 
-            if (await _memberRepository.AnyAsync(m => m.Email == model.Email && m.Id != id, cancellationToken))
+            if (await _unitOfWork.Members.AnyAsync(m => m.Email == model.Email && m.Id != id, cancellationToken))
                 return false;
-            if (await _memberRepository.AnyAsync(m => m.Phone == model.Phone && m.Id != id, cancellationToken))
+            if (await _unitOfWork.Members.AnyAsync(m => m.Phone == model.Phone && m.Id != id, cancellationToken))
                 return false;
 
             member.Email = model.Email;
@@ -159,27 +156,27 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             member.UpdatedAt = DateTime.Now;
 
 
-            _memberRepository.Update(member);
-            var result = await _memberRepository.SaveChangesAsync(cancellationToken);
+            _unitOfWork.Members.Update(member);
+            var result = await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return result > 0 ? true : false;
         }
 
         public async Task<bool> RemoveAsync(int id, CancellationToken cancellationToken = default)
         {
-            var member = await _memberRepository.GetByIdAsync(id, cancellationToken);
+            var member = await _unitOfWork.Members.GetByIdAsync(id, cancellationToken);
             if (member is null) return false;
 
 
-            var hasFutureSessions = await _bookingRepository.AnyAsync(b => b.MemberId == id && b.Session.StartDate > DateTime.Now);
+            var hasFutureSessions = await _unitOfWork.Bookings.AnyAsync(b => b.MemberId == id && b.Session.StartDate > DateTime.Now);
 
             if (hasFutureSessions)
                 return false;
 
-            await _memberRepository.SoftDeleteAsync(member, cancellationToken);
-            await _healthRecordRepository.SoftDeleteAsync(member.HealthRecord, cancellationToken);
+            await _unitOfWork.Members.SoftDeleteAsync(member, cancellationToken);
+            await _unitOfWork.HealthRecords.SoftDeleteAsync(member.HealthRecord, cancellationToken);
 
-            var rowsAffected = await _memberRepository.SaveChangesAsync(cancellationToken);
+            var rowsAffected = await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return rowsAffected > 0;
         }

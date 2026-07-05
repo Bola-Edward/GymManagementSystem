@@ -1,8 +1,7 @@
 ﻿using GymManagementSystem.DAL.Models;
-using GymManagementSystem.DAL.Repositories;
 
 
-namespace GymManagementSystem.DataAccess.Repositories
+namespace GymManagementSystem.DAL.Repositories.Interfaces
 {
     public interface ITrainerRepository : IRepository<Trainer>
     {

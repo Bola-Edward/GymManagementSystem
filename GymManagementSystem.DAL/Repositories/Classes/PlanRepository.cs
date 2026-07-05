@@ -1,9 +1,9 @@
-﻿using GymManagementSystem.DAL.Repositories;
+﻿using GymManagementSystem.DAL.Repositories.Interfaces;
 using GymManagementSystem.Data.Contexts;
 using GymManagementSystem.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace GymManagementSystem.DataAccess.Repositories
+namespace GymManagementSystem.DAL.Repositories.Classes
 {
     public class PlanRepository : Repository<Plan>, IPlanRepository
     {

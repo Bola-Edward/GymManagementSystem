@@ -1,4 +1,5 @@
 ﻿using GymManagementSystem.DAL.Models;
+using GymManagementSystem.DAL.Repositories.Interfaces;
 using GymManagementSystem.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -6,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace GymManagementSystem.DAL.Repositories
+namespace GymManagementSystem.DAL.Repositories.Classes
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : BaseEntity
     {

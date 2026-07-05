@@ -1,7 +1,8 @@
 ﻿using GymManagementSystem.DAL.Interceptors;
 using GymManagementSystem.DAL.Repositories;
+using GymManagementSystem.DAL.Repositories.Classes;
+using GymManagementSystem.DAL.Repositories.Interfaces;
 using GymManagementSystem.Data.Contexts;
-using GymManagementSystem.DataAccess.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -22,9 +23,7 @@ namespace GymManagementSystem.DAL
                 options.AddInterceptors(sp.GetRequiredService<AuditColumnsInterceptor>());
             });
 
-            services.AddScoped<IPlanRepository, PlanRepository>();
-            services.AddScoped<IMemberRepository, MemberRepository>();
-            services.AddScoped<ITrainerRepository, TrainerRepository>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             return services;
         }
     }

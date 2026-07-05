@@ -1,7 +1,7 @@
 ﻿using GymManagementSystem.BusinessLogic.Services.Classes;
 using GymManagementSystem.BusinessLogic.Services.Interfaces;
-using GymManagementSystem.DAL.Repositories;
-using GymManagementSystem.DataAccess.Repositories;
+using GymManagementSystem.DAL.Repositories.Classes;
+using GymManagementSystem.DAL.Repositories.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -13,13 +13,13 @@ namespace GymManagementSystem.BLL
     {
         public static IServiceCollection AddBusinessLogic(this IServiceCollection services)
         {
-            services.AddScoped<IMemberService, MemberService>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-            services.AddScoped<IMemberRepository, MemberRepository>();
-            services.AddScoped<IPlanRepository, PlanRepository>();
+
+            services.AddScoped<IMemberService, MemberService>();
             services.AddScoped<IPlanService, PlanService>();
-            services.AddScoped<ITrainerRepository, TrainerRepository>();
             services.AddScoped<ITrainerService, TrainerService>();
+
+
             return services;
         }
     }

@@ -1,6 +1,6 @@
 ﻿using GymManagementSystem.DAL.Models;
 
-namespace GymManagementSystem.DAL.Repositories
+namespace GymManagementSystem.DAL.Repositories.Interfaces
 {
     public interface IMemberRepository : IRepository<Member>
     {
