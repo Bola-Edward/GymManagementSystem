@@ -24,7 +24,7 @@ namespace GymManagementSystem.DAL
 
             services.AddScoped<IPlanRepository, PlanRepository>();
             services.AddScoped<IMemberRepository, MemberRepository>();
-
+            services.AddScoped<ITrainerRepository, TrainerRepository>();
             return services;
         }
     }
