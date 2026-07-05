@@ -1,6 +1,7 @@
 ﻿using GymManagementSystem.BusinessLogic.Services.Classes;
 using GymManagementSystem.BusinessLogic.Services.Interfaces;
 using GymManagementSystem.DAL.Repositories;
+using GymManagementSystem.DataAccess.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,8 @@ namespace GymManagementSystem.BLL
             services.AddScoped<IMemberService, MemberService>();
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IMemberRepository, MemberRepository>();
+            services.AddScoped<IPlanRepository, PlanRepository>();
+            services.AddScoped<IPlanService, PlanService>();
 
             return services;
         }
