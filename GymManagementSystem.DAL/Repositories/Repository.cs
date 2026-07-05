@@ -25,10 +25,24 @@ namespace GymManagementSystem.DAL.Repositories
             return await _dbSet.AsNoTracking().ToListAsync(cancellation);
         }
 
-
-        public async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellation = default)
+        public async Task<IReadOnlyList<TEntity>> GetAllIncludingAsync(CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includes)
         {
-            return await _dbSet.FirstOrDefaultAsync(t => t.Id == id, cancellation);
+            return await ApplyIncludes(_dbSet.AsQueryable(), includes)
+                         .AsNoTracking()
+                         .ToListAsync(cancellationToken);
+        }
+
+
+        public async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default, bool trackChanges = false, params Expression<Func<TEntity, object>>[] includes)
+        {
+            var query = ApplyIncludes(_dbSet.AsQueryable(), includes);
+
+
+            if (!trackChanges)
+            {
+                query = query.AsNoTracking();
+            }
+            return await query.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
         }
 
 
@@ -38,17 +52,16 @@ namespace GymManagementSystem.DAL.Repositories
         }
 
 
-        public async Task<bool> ExistAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellation = default)
+        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellation = default)
         {
             return await _dbSet.AnyAsync(predicate, cancellation);
         }
 
 
-        public async Task<IReadOnlyList<TEntity>> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
         {
-            return await _dbSet.AsNoTracking()
-                               .Where(predicate)
-                               .ToListAsync(cancellationToken);
+            return await _dbSet.FirstOrDefaultAsync(predicate, cancellationToken);
+
         }
 
 
@@ -77,6 +90,26 @@ namespace GymManagementSystem.DAL.Repositories
             return _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken ct = default) => _dbSet.AsNoTracking().AnyAsync(predicate, ct);
+        public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken = default)
+        {
+            return _dbSet.AsNoTracking().AnyAsync(predicate, cancellationToken);
+        }
+
+        private IQueryable<TEntity> ApplyIncludes(IQueryable<TEntity> query, params Expression<Func<TEntity, object>>[] includes)
+        {
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            return query;
+        }
+
+
+        public async Task<int> DeleteAsync(TEntity entity)
+        {
+            _dbSet.Remove(entity);
+            return await _dbContext.SaveChangesAsync();
+        }
     }
 }
