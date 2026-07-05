@@ -6,7 +6,7 @@
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show custom-alert">
+    <div id="Alert" class="alert alert-success alert-dismissible fade show custom-alert">
         <i class="bi bi-check-circle-fill me-2"></i>
         @TempData["SuccessMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -14,7 +14,7 @@
 }
 else if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show custom-alert">
+    <div id="Alert" class="alert alert-danger alert-dismissible fade show custom-alert">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>
         @TempData["ErrorMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -65,7 +65,7 @@ else if (TempData["ErrorMessage"] != null)
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-start" aria-labelledby="dropdownMenuButton-@member.Id">
                                         <li>
-                                            <a asp-controller="Members" asp-action="MemberDetails" asp-route-Id="@member.Id" class="dropdown-item d-flex align-items-center gap-3">
+                                            <a asp-controller="Members" asp-action="Details" asp-route-Id="@member.Id" class="dropdown-item d-flex align-items-center gap-3">
                                                 <img src="~/images/info 1.jpg" alt="info icon" style="width: 20px; height: 20px;" />
                                                 <span>View Member Data</span>
                                             </a>
@@ -79,7 +79,7 @@ else if (TempData["ErrorMessage"] != null)
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
 
-                                            <a asp-controller="Members" asp-action="MemberEdit" asp-route-Id="@member.Id" class="dropdown-item d-flex align-items-center gap-3">
+                                            <a asp-controller="Members" asp-action="Edit" asp-route-Id="@member.Id" class="dropdown-item d-flex align-items-center gap-3">
                                                 <img src="~/images/edit.jpg" alt="edit icon" style="width: 20px; height: 20px;" />
                                                 <span>Edit Member Data</span>
                                             </a>
