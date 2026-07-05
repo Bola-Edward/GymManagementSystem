@@ -53,7 +53,7 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
                     Weight = model.HealthRecordViewModel.Weight,
                     Height = model.HealthRecordViewModel.Height,
                     Notes = model.HealthRecordViewModel.Note,
-                    BloodType = Enum.Parse<BloodType>(model.HealthRecordViewModel.BloodType)
+                    BloodType = model.HealthRecordViewModel.BloodType
                 }
             };
 

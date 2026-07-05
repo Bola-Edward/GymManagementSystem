@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GymManagementSystem.DAL.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -14,8 +15,8 @@ namespace GymManagementSystem.BusinessLogic.ViewModels.MemberViewModels
         public decimal Weight { get; set; }
 
         [Required(ErrorMessage = "Blood Type Is Required")]
-        [StringLength(3, ErrorMessage = "Blood type must be 3 characters or less")]
-        public string BloodType { get; set; } = default!;
+        [EnumDataType(typeof(BloodType), ErrorMessage = "Invalid Blood Type")]
+        public BloodType BloodType { get; set; } = default!;
         public string? Note { get; set; } = default!;
     }
 }
