@@ -1,4 +1,5 @@
-﻿using GymManagementSystem.BusinessLogic.Services.Interfaces;
+﻿using GymManagementSystem.BusinessLogic.Common;
+using GymManagementSystem.BusinessLogic.Services.Interfaces;
 using GymManagementSystem.BusinessLogic.ViewModels.PlanViewModels;
 using GymManagementSystem.DAL.Models;
 using GymManagementSystem.DAL.Repositories.Interfaces;
@@ -16,12 +17,11 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             _unitOfWork = unitOfWork;
         }
 
-
-        public async Task<IEnumerable<PlanViewModel>> GetAllPlansAsync(CancellationToken cancellationToken = default)
+        public async Task<Result<IEnumerable<PlanViewModel>>> GetAllPlansAsync(CancellationToken cancellationToken = default)
         {
-            var plans = await _unitOfWork.Plans.GetAllAsync(cancellationToken: cancellationToken);
+            var plans = await _unitOfWork.Plans.GetAllAsync(cancellationToken);
 
-            return plans.Select(p => new PlanViewModel
+            var viewModels = plans.Select(p => new PlanViewModel
             {
                 Id = p.Id,
                 Name = p.Name,
@@ -30,15 +30,17 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
                 Description = p.Description,
                 IsActive = p.IsActive
             });
+
+            return Result<IEnumerable<PlanViewModel>>.Ok(viewModels);
         }
 
-
-        public async Task<PlanViewModel?> GetPlanByIdAsync(int planId, CancellationToken cancellationToken = default)
+        public async Task<Result<PlanViewModel>> GetPlanByIdAsync(int planId, CancellationToken cancellationToken = default)
         {
             var plan = await _unitOfWork.Plans.GetByIdAsync(planId, cancellationToken);
-            if (plan is null) return null;
+            if (plan is null)
+                return Result<PlanViewModel>.NotFound($"Plan with ID {planId} was not found.");
 
-            return new PlanViewModel
+            var viewModel = new PlanViewModel
             {
                 Id = plan.Id,
                 Name = plan.Name,
@@ -47,21 +49,29 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
                 Description = plan.Description,
                 IsActive = plan.IsActive
             };
+
+            return Result<PlanViewModel>.Ok(viewModel);
         }
 
-
-        public async Task<EditPlanViewModel?> GetPlanToUpdateAsync(int planId, CancellationToken cancellationToken = default)
+        public async Task<Result<EditPlanViewModel>> GetPlanToUpdateAsync(int planId, CancellationToken cancellationToken = default)
         {
             var plan = await _unitOfWork.Plans.GetByIdAsync(planId, cancellationToken);
 
+            if (plan is null)
+                return Result<EditPlanViewModel>.NotFound($"Plan with ID {planId} was not found.");
 
-            if (plan is null || !plan.IsActive) return null;
+            if (!plan.IsActive)
+                return Result<EditPlanViewModel>.Fail("Cannot edit an inactive plan.", ResultKind.ValidationFailed);
 
+            var hasActiveMemberships = await _unitOfWork.Memberships.AnyAsync(
+                m => m.PlanId == planId && m.EndDate > DateTime.UtcNow,
+                cancellationToken
+            );
 
-            if (await _unitOfWork.Memberships.AnyAsync(m => m.PlanId == planId && m.EndDate > DateTime.Now, cancellationToken))
-                return null;
+            if (hasActiveMemberships)
+                return Result<EditPlanViewModel>.Fail("Cannot update this plan because it has active member subscriptions.", ResultKind.Conflict);
 
-            return new EditPlanViewModel
+            var editModel = new EditPlanViewModel
             {
                 Id = plan.Id,
                 PlanName = plan.Name,
@@ -69,23 +79,24 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
                 Price = plan.Price,
                 Description = plan.Description
             };
+
+            return Result<EditPlanViewModel>.Ok(editModel);
         }
 
-
-        public async Task<bool> UpdatePlanAsync(int id, EditPlanViewModel model, CancellationToken cancellationToken = default)
+        public async Task<Result> UpdatePlanAsync(int id, EditPlanViewModel model, CancellationToken cancellationToken = default)
         {
             var plan = await _unitOfWork.Plans.GetByIdAsync(id, cancellationToken);
-            if (plan is null) return false;
+            if (plan is null)
+                return Result.Fail("Plan not found.", ResultKind.NotFound);
 
-
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.UtcNow;
             var hasActiveMemberships = await _unitOfWork.Memberships.AnyAsync(
                 ms => ms.PlanId == id && ms.StartDate <= today && ms.EndDate >= today,
                 cancellationToken
             );
 
             if (hasActiveMemberships)
-                return false;
+                return Result.Fail("Cannot update plan properties while it has active subscriptions running.", ResultKind.Conflict);
 
             plan.Price = model.Price;
             plan.DurationDays = model.DurationDays;
@@ -94,35 +105,35 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
 
             _unitOfWork.Plans.Update(plan);
             var rowsAffected = await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return rowsAffected > 0;
+
+            return rowsAffected > 0 ? Result.Ok() : Result.Fail("No changes were saved.", ResultKind.Conflict);
         }
 
-
-        public async Task<bool> ToggleActivationAsync(int planId, CancellationToken cancellationToken = default)
+        public async Task<Result> ToggleActivationAsync(int planId, CancellationToken cancellationToken = default)
         {
             var plan = await _unitOfWork.Plans.GetByIdAsync(planId, cancellationToken);
-            if (plan is null) return false;
-
+            if (plan is null)
+                return Result.Fail("Plan not found.", ResultKind.NotFound);
 
             if (plan.IsActive)
             {
-                var today = DateTime.UtcNow.Date;
+                var today = DateTime.UtcNow;
                 var hasActiveMemberships = await _unitOfWork.Memberships.AnyAsync(
                     ms => ms.PlanId == planId && ms.StartDate <= today && ms.EndDate >= today,
                     cancellationToken
                 );
 
                 if (hasActiveMemberships)
-                    return false;
+                    return Result.Fail("Cannot deactivate this plan because members are currently subscribed to it.", ResultKind.Conflict);
             }
-
 
             plan.IsActive = !plan.IsActive;
             plan.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.Plans.Update(plan);
             var rowsAffected = await _unitOfWork.SaveChangesAsync(cancellationToken);
-            return rowsAffected > 0;
+
+            return rowsAffected > 0 ? Result.Ok() : Result.Fail("Operation failed.", ResultKind.Conflict);
         }
     }
 }

@@ -17,12 +17,20 @@ namespace GymManagementSystem.Controllers
             _planService = planService;
         }
 
+
         public async Task<IActionResult> Index()
         {
-            var plans = await _planService.GetAllPlansAsync();
+            var result = await _planService.GetAllPlansAsync();
 
-            return View(plans);
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.Error;
+                return View(System.Array.Empty<PlanViewModel>());
+            }
+
+            return View(result.Value);
         }
+
 
         public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
         {
@@ -31,29 +39,31 @@ namespace GymManagementSystem.Controllers
                 return NotFound();
             }
 
-            var plan = await _planService.GetPlanByIdAsync(id, cancellationToken);
+            var result = await _planService.GetPlanByIdAsync(id, cancellationToken);
 
-            if (plan is null)
+            if (!result.Success)
             {
+                TempData["ErrorMessage"] = result.Error;
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(plan);  // Views/Plans/Details.cshtml
+            return View(result.Value);
         }
-
-
 
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            var plan = await _planService.GetPlanToUpdateAsync(id, cancellationToken);
-            if (plan is null)
+            var result = await _planService.GetPlanToUpdateAsync(id, cancellationToken);
+
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = "Plan cannot be edited (not found, inactive, or has active memberships).";
+
+                TempData["ErrorMessage"] = result.Error;
                 return RedirectToAction(nameof(Index));
             }
-            return View(plan);
+
+            return View(result.Value);
         }
 
         [HttpPost]
@@ -63,25 +73,34 @@ namespace GymManagementSystem.Controllers
             if (!ModelState.IsValid) return View(model);
 
             var result = await _planService.UpdatePlanAsync(id, model, cancellationToken);
-            if (result)
+
+            if (result.Success)
             {
                 TempData["SuccessMessage"] = "Plan updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
-            TempData["ErrorMessage"] = "Plan Failed To update";
+
+            TempData["ErrorMessage"] = result.Error;
             return View(model);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Activate(int id, CancellationToken ct)
         {
             var result = await _planService.ToggleActivationAsync(id, ct);
-            if (result)
-                TempData["SuccessMessage"] = "Plan status changed";
-            TempData["ErrorMessage"] = "Failed to Toggle Plan Status";
+
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = "Plan status changed successfully.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = result.Error;
+            }
+
             return RedirectToAction(nameof(Index));
         }
-
     }
 }

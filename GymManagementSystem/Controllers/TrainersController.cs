@@ -13,90 +13,119 @@ namespace GymManagementSystem.Presentation.Controllers
             _trainerService = trainerService;
         }
 
+
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
-            => View(await _trainerService.GetAllTrainersAsync(cancellationToken));
+        {
+            var result = await _trainerService.GetAllTrainersAsync(cancellationToken);
+
+
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.Error;
+                return View(System.Array.Empty<TrainerViewModel>());
+            }
+
+            return View(result.Value);
+        }
 
         [HttpGet]
         public IActionResult Create() => View();
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateTrainerViewModel model, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid) return View(model);
 
             var result = await _trainerService.CreateTrainerAsync(model, cancellationToken);
-            if (result)
+
+            if (result.Success)
             {
                 TempData["SuccessMessage"] = "Trainer created successfully.";
                 return RedirectToAction(nameof(Index));
             }
-            TempData["ErrorMessage"] = "Trainer Failed create";
+
+
+            TempData["ErrorMessage"] = result.Error;
             return View(model);
         }
 
         [HttpGet]
         public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
         {
-            var trainer = await _trainerService.GetTrainerDetailsAsync(id, cancellationToken);
-            if (trainer is null)
+            var result = await _trainerService.GetTrainerDetailsAsync(id, cancellationToken);
+
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = "Trainer not found.";
+                TempData["ErrorMessage"] = result.Error;
                 return RedirectToAction(nameof(Index));
             }
-            return View(trainer);
+
+            return View(result.Value);
         }
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            var trainer = await _trainerService.GetTrainerToUpdateAsync(id, cancellationToken);
-            if (trainer is null)
+            var result = await _trainerService.GetTrainerToUpdateAsync(id, cancellationToken);
+
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = "Trainer not found.";
+                TempData["ErrorMessage"] = result.Error;
                 return RedirectToAction(nameof(Index));
             }
-            return View(trainer);
+
+            return View(result.Value);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, EditTrainerViewModel model, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid) return View(model);
 
             var result = await _trainerService.UpdateTrainerDetailsAsync(id, model, cancellationToken);
-            if (result)
+
+            if (result.Success)
             {
                 TempData["SuccessMessage"] = "Trainer updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
-            TempData["ErrorMessage"] = "Trainer Failed To update";
+
+            TempData["ErrorMessage"] = result.Error;
             return View(model);
         }
 
         [HttpGet]
         public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            var trainer = await _trainerService.GetTrainerDetailsAsync(id, cancellationToken);
-            if (trainer is null)
+            var result = await _trainerService.GetTrainerDetailsAsync(id, cancellationToken);
+
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = "Trainer not found.";
+                TempData["ErrorMessage"] = result.Error;
                 return RedirectToAction(nameof(Index));
             }
-            return View(trainer);
+
+            return View(result.Value);
         }
 
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)
         {
             var result = await _trainerService.RemoveTrainerAsync(id, cancellationToken);
-            if (result)
+
+            if (result.Success)
             {
                 TempData["SuccessMessage"] = "Trainer deleted successfully.";
             }
             else
             {
-                TempData["ErrorMessage"] = "Failed To delete Trainer. Ensure they have no future sessions.";
+
+                TempData["ErrorMessage"] = result.Error;
             }
+
             return RedirectToAction(nameof(Index));
         }
     }

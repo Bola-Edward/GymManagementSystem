@@ -14,10 +14,18 @@ namespace GymManagementSystem.PL.Controllers
             _memberService = memberService;
         }
 
+
         public async Task<IActionResult> Index(CancellationToken cancellationToken)
         {
-            var items = await _memberService.GetAllAsync(cancellationToken);
-            return View(items); // Views/Members/Index.cshtml
+            var result = await _memberService.GetAllAsync(cancellationToken);
+
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.Error;
+                return View(System.Array.Empty<MemberViewModel>());
+            }
+
+            return View(result.Value);
         }
 
         [HttpGet]
@@ -26,95 +34,115 @@ namespace GymManagementSystem.PL.Controllers
             return View();
         }
 
-
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CreateMemberViewModel model, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid) return View(nameof(Create), model);
 
             var result = await _memberService.CreateAsync(model, cancellationToken);
-            if (result)
-                TempData["SuccessMessage"] = "Member created successfully.";
-            else
-                TempData["ErrorMessage"] = "Failed To Create Member";
 
-            return RedirectToAction(nameof(Index));
+            if (result.Success)
+            {
+                TempData["SuccessMessage"] = "Member created successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+
+
+            TempData["ErrorMessage"] = result.Error;
+            return View(nameof(Create), model);
         }
 
         [HttpGet]
         public async Task<IActionResult> Details(int id, CancellationToken ct)
         {
-            var member = await _memberService.GetDetailsAsync(id, ct);
-            if (member is null)
+            var result = await _memberService.GetDetailsAsync(id, ct);
+
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = "Member not found.";
+                TempData["ErrorMessage"] = result.Error;
                 return RedirectToAction(nameof(Index));
             }
-            return View(member);
-        }
 
+            return View(result.Value);
+        }
 
         [HttpGet]
         public async Task<IActionResult> HealthRecordDetails(int id, CancellationToken ct)
         {
-            var record = await _memberService.GetHealthRecordAsync(id, ct);
-            if (record is null)
+            var result = await _memberService.GetHealthRecordAsync(id, ct);
+
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = "Health record not found.";
+                TempData["ErrorMessage"] = result.Error;
                 return RedirectToAction(nameof(Index));
             }
-            return View(record);
+
+            return View(result.Value);
         }
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
         {
-            var member = await _memberService.GetForEditAsync(id, cancellationToken);
-            if (member is null)
+            var result = await _memberService.GetForEditAsync(id, cancellationToken);
+
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = "Member not found.";
+                TempData["ErrorMessage"] = result.Error;
                 return RedirectToAction(nameof(Index));
             }
-            return View(member);
+
+            return View(result.Value);
         }
 
-
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, EditMemberViewModel model, CancellationToken cancellationToken)
         {
             if (!ModelState.IsValid) return View(model);
 
             var result = await _memberService.UpdateAsync(id, model, cancellationToken);
-            if (result)
+
+            if (result.Success)
             {
                 TempData["SuccessMessage"] = "Member updated successfully.";
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["ErrorMessage"] = "Failed To update Member";
+            TempData["ErrorMessage"] = result.Error;
             return View(model);
         }
-
 
         [HttpGet]
         public async Task<IActionResult> Delete(int id, CancellationToken ct)
         {
-            var member = await _memberService.GetDetailsAsync(id, ct);
-            if (member is null)
+            var result = await _memberService.GetDetailsAsync(id, ct);
+
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = "Member not found.";
+                TempData["ErrorMessage"] = result.Error;
                 return RedirectToAction(nameof(Index));
             }
-            return View();
+
+            return View(result.Value);
         }
 
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)
         {
             var result = await _memberService.RemoveAsync(id, cancellationToken);
-            if (result)
+
+            if (result.Success)
+            {
                 TempData["SuccessMessage"] = "Member deleted successfully.";
-            TempData["ErrorMessage"] = "Failed To delete Member";
+            }
+            else
+            {
+
+                TempData["ErrorMessage"] = result.Error;
+            }
+
             return RedirectToAction(nameof(Index));
         }
     }
