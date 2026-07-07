@@ -1,11 +1,8 @@
 ﻿using GymManagementSystem.BLL.ViewModels.MemberViewModels;
-using GymManagementSystem.BusinessLogic.Common;
-using GymManagementSystem.BusinessLogic.ViewModels.MemberViewModels;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using GymManagementSystem.BLL.Common;
 
-namespace GymManagementSystem.BusinessLogic.Services.Interfaces
+
+namespace GymManagementSystem.BLL.Services.Interfaces
 {
     public interface IMemberService
     {

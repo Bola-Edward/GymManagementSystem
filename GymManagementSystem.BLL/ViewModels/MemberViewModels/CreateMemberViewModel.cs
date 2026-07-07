@@ -1,7 +1,7 @@
 ﻿using GymManagementSystem.DAL.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace GymManagementSystem.BusinessLogic.ViewModels.MemberViewModels
+namespace GymManagementSystem.BLL.ViewModels.MemberViewModels
 {
     public class CreateMemberViewModel
     {

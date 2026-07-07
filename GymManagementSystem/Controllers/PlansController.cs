@@ -1,5 +1,5 @@
-﻿using GymManagementSystem.BusinessLogic.Services.Interfaces;
-using GymManagementSystem.BusinessLogic.ViewModels.PlanViewModels;
+﻿using GymManagementSystem.BLL.Services.Interfaces;
+using GymManagementSystem.BLL.ViewModels.PlanViewModels;
 using GymManagementSystem.DAL.Repositories;
 using GymManagementSystem.Data.Contexts;
 using GymManagementSystem.Models;

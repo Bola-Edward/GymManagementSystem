@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GymManagementSystem.BusinessLogic.Common
+namespace GymManagementSystem.BLL.Common
 {
     public sealed record Result(bool Success, string? Error = null, ResultKind Kind = ResultKind.Ok)
     {

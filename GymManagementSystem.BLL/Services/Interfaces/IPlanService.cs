@@ -1,10 +1,8 @@
-﻿using GymManagementSystem.BusinessLogic.Common;
-using GymManagementSystem.BusinessLogic.ViewModels.PlanViewModels;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using GymManagementSystem.BLL.Common;
+using GymManagementSystem.BLL.ViewModels.PlanViewModels;
 
-namespace GymManagementSystem.BusinessLogic.Services.Interfaces
+
+namespace GymManagementSystem.BLL.Services.Interfaces
 {
     public interface IPlanService
     {

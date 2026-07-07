@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GymManagementSystem.BusinessLogic.ViewModels.PlanViewModels
+﻿namespace GymManagementSystem.BLL.ViewModels.PlanViewModels
 {
     public class PlanViewModel
     {

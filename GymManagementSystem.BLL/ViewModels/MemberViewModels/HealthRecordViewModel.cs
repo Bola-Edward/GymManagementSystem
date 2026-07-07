@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace GymManagementSystem.BusinessLogic.ViewModels.MemberViewModels
+namespace GymManagementSystem.BLL.ViewModels.MemberViewModels
 {
     public class HealthRecordViewModel
     {

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace GymManagementSystem.BusinessLogic.ViewModels.PlanViewModels
+
+namespace GymManagementSystem.BLL.ViewModels.PlanViewModels
 {
     public class EditPlanViewModel
     {

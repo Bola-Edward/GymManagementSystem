@@ -1,8 +1,8 @@
-﻿using GymManagementSystem.BusinessLogic.Common;
-using GymManagementSystem.BusinessLogic.ViewModels.TrainerViewModels;
+﻿using GymManagementSystem.BLL.Common;
+using GymManagementSystem.BLL.ViewModels.TrainerViewModels;
 
 
-namespace GymManagementSystem.BusinessLogic.Services.Interfaces
+namespace GymManagementSystem.BLL.Services.Interfaces
 {
     public interface ITrainerService
     {

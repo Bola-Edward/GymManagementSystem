@@ -1,35 +1,29 @@
-﻿using GymManagementSystem.BusinessLogic.Common;
-using GymManagementSystem.BusinessLogic.Services.Interfaces;
-using GymManagementSystem.BusinessLogic.ViewModels.PlanViewModels;
-using GymManagementSystem.DAL.Models;
+﻿using AutoMapper;
+using GymManagementSystem.BLL.Common;
+using GymManagementSystem.BLL.Services.Interfaces;
+using GymManagementSystem.BLL.ViewModels.PlanViewModels;
 using GymManagementSystem.DAL.Repositories.Interfaces;
-using GymManagementSystem.Models;
 
 
-namespace GymManagementSystem.BusinessLogic.Services.Classes
+namespace GymManagementSystem.BLL.Services.Classes
 {
     public class PlanService : IPlanService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public PlanService(IUnitOfWork unitOfWork)
+        public PlanService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<Result<IEnumerable<PlanViewModel>>> GetAllPlansAsync(CancellationToken cancellationToken = default)
         {
             var plans = await _unitOfWork.Plans.GetAllAsync(cancellationToken);
 
-            var viewModels = plans.Select(p => new PlanViewModel
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                DurationDays = p.DurationDays,
-                Description = p.Description,
-                IsActive = p.IsActive
-            });
+
+            var viewModels = _mapper.Map<IEnumerable<PlanViewModel>>(plans);
 
             return Result<IEnumerable<PlanViewModel>>.Ok(viewModels);
         }
@@ -40,15 +34,8 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (plan is null)
                 return Result<PlanViewModel>.NotFound($"Plan with ID {planId} was not found.");
 
-            var viewModel = new PlanViewModel
-            {
-                Id = plan.Id,
-                Name = plan.Name,
-                Price = plan.Price,
-                DurationDays = plan.DurationDays,
-                Description = plan.Description,
-                IsActive = plan.IsActive
-            };
+
+            var viewModel = _mapper.Map<PlanViewModel>(plan);
 
             return Result<PlanViewModel>.Ok(viewModel);
         }
@@ -71,14 +58,7 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (hasActiveMemberships)
                 return Result<EditPlanViewModel>.Fail("Cannot update this plan because it has active member subscriptions.", ResultKind.Conflict);
 
-            var editModel = new EditPlanViewModel
-            {
-                Id = plan.Id,
-                PlanName = plan.Name,
-                DurationDays = plan.DurationDays,
-                Price = plan.Price,
-                Description = plan.Description
-            };
+            var editModel = _mapper.Map<EditPlanViewModel>(plan);
 
             return Result<EditPlanViewModel>.Ok(editModel);
         }
@@ -98,9 +78,8 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (hasActiveMemberships)
                 return Result.Fail("Cannot update plan properties while it has active subscriptions running.", ResultKind.Conflict);
 
-            plan.Price = model.Price;
-            plan.DurationDays = model.DurationDays;
-            plan.Description = model.Description;
+
+            _mapper.Map(model, plan);
             plan.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.Plans.Update(plan);

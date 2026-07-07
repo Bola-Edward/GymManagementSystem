@@ -1,39 +1,33 @@
-﻿using GymManagementSystem.BusinessLogic.Common;
-using GymManagementSystem.BusinessLogic.Services.Interfaces;
-using GymManagementSystem.BusinessLogic.ViewModels.TrainerViewModels;
+﻿using AutoMapper;
+using GymManagementSystem.BLL.Common;
+using GymManagementSystem.BLL.Services.Interfaces;
+using GymManagementSystem.BLL.ViewModels.TrainerViewModels;
 using GymManagementSystem.DAL.Models;
-using GymManagementSystem.DAL.Models.ValueObjects;
 using GymManagementSystem.DAL.Repositories.Interfaces;
 
 
-namespace GymManagementSystem.BusinessLogic.Services.Classes
+namespace GymManagementSystem.BLL.Services.Classes
 {
     public class TrainerService : ITrainerService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public TrainerService(IUnitOfWork unitOfWork)
+        public TrainerService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
-
 
         public async Task<Result<IEnumerable<TrainerViewModel>>> GetAllTrainersAsync(CancellationToken cancellationToken = default)
         {
             var trainers = await _unitOfWork.Trainers.GetAllAsync(cancellationToken);
 
-            var viewModels = trainers.Select(t => new TrainerViewModel
-            {
-                Id = t.Id,
-                Name = t.Name,
-                Speciality = t.Speciality.ToString(),
-                Phone = t.Phone,
-                Email = t.Email,
-            });
+
+            var viewModels = _mapper.Map<IEnumerable<TrainerViewModel>>(trainers);
 
             return Result<IEnumerable<TrainerViewModel>>.Ok(viewModels);
         }
-
 
         public async Task<Result<TrainerViewModel>> GetTrainerDetailsAsync(int trainerId, CancellationToken cancellationToken = default)
         {
@@ -41,47 +35,25 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (trainer is null)
                 return Result<TrainerViewModel>.NotFound($"Trainer with ID {trainerId} was not found.");
 
-            var viewModel = new TrainerViewModel
-            {
-                Id = trainer.Id,
-                Name = trainer.Name,
-                Speciality = trainer.Speciality.ToString(),
-                Phone = trainer.Phone,
-                Email = trainer.Email,
-                Address = trainer.Address != null ? $"{trainer.Address.BuildingNumber} - {trainer.Address.Street} - {trainer.Address.City}" : "No Address",
-                DateOfBirth = trainer.DateOfBirth.ToString("MM/dd/yyyy")
-            };
+
+            var viewModel = _mapper.Map<TrainerViewModel>(trainer);
 
             return Result<TrainerViewModel>.Ok(viewModel);
         }
-
 
         public async Task<Result> CreateTrainerAsync(CreateTrainerViewModel model, CancellationToken cancellationToken = default)
         {
             if (await _unitOfWork.Trainers.AnyAsync(t => t.Phone == model.Phone, cancellationToken))
                 return Result.Fail("Trainer with this phone number already exists.", ResultKind.Conflict);
 
-            var trainer = new Trainer
-            {
-                Name = model.Name,
-                Speciality = model.Speciality,
-                Phone = model.Phone,
-                Email = model.Email,
-                HireDate = DateTime.UtcNow,
-                DateOfBirth = model.DateOfBirth,
-                Address = new Address
-                {
-                    BuildingNumber = model.BuildingNumber,
-                    Street = model.Street,
-                    City = model.City
-                }
-            };
+
+            var trainer = _mapper.Map<Trainer>(model);
+            trainer.HireDate = DateTime.UtcNow;
 
             await _unitOfWork.Trainers.AddAsync(trainer, cancellationToken);
             var result = await _unitOfWork.SaveChangesAsync(cancellationToken);
             return result > 0 ? Result.Ok() : Result.Fail("Failed to create trainer.", ResultKind.Conflict);
         }
-
 
         public async Task<Result<EditTrainerViewModel>> GetTrainerToUpdateAsync(int trainerId, CancellationToken cancellationToken = default)
         {
@@ -89,18 +61,11 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (trainer is null)
                 return Result<EditTrainerViewModel>.NotFound($"Trainer with ID {trainerId} was not found.");
 
-            var editModel = new EditTrainerViewModel
-            {
-                Id = trainer.Id,
-                Name = trainer.Name,
-                Speciality = trainer.Speciality,
-                Phone = trainer.Phone,
-                Email = trainer.Email,
-            };
+
+            var editModel = _mapper.Map<EditTrainerViewModel>(trainer);
 
             return Result<EditTrainerViewModel>.Ok(editModel);
         }
-
 
         public async Task<Result> UpdateTrainerDetailsAsync(int trainerId, EditTrainerViewModel model, CancellationToken cancellationToken = default)
         {
@@ -111,17 +76,14 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (await _unitOfWork.Trainers.AnyAsync(t => t.Phone == model.Phone && t.Id != trainerId, cancellationToken))
                 return Result.Fail("Trainer with this phone number already exists.", ResultKind.Conflict);
 
-            trainer.Name = model.Name;
-            trainer.Speciality = model.Speciality;
-            trainer.Phone = model.Phone;
-            trainer.Email = model.Email;
+
+            _mapper.Map(model, trainer);
             trainer.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.Trainers.Update(trainer);
             var result = await _unitOfWork.SaveChangesAsync(cancellationToken);
             return result > 0 ? Result.Ok() : Result.Fail("No changes were saved.", ResultKind.Conflict);
         }
-
 
         public async Task<Result> RemoveTrainerAsync(int trainerId, CancellationToken cancellationToken = default)
         {

@@ -1,6 +1,5 @@
 ﻿using GymManagementSystem.BLL.ViewModels.MemberViewModels;
-using GymManagementSystem.BusinessLogic.Services.Interfaces;
-using GymManagementSystem.BusinessLogic.ViewModels.MemberViewModels;
+using GymManagementSystem.BLL.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GymManagementSystem.PL.Controllers

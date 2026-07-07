@@ -1,7 +1,7 @@
 ﻿using GymManagementSystem.DAL.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace GymManagementSystem.BusinessLogic.ViewModels.TrainerViewModels
+namespace GymManagementSystem.BLL.ViewModels.TrainerViewModels
 {
     public class EditTrainerViewModel
     {

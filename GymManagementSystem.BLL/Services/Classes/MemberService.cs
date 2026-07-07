@@ -1,38 +1,29 @@
-﻿using GymManagementSystem.BLL.ViewModels.MemberViewModels;
-using GymManagementSystem.BusinessLogic.Common;
-using GymManagementSystem.BusinessLogic.Services.Interfaces;
-using GymManagementSystem.BusinessLogic.ViewModels.MemberViewModels;
-using GymManagementSystem.DAL.Enums;
+﻿using AutoMapper;
+using GymManagementSystem.BLL.Services.Interfaces;
+using GymManagementSystem.BLL.ViewModels.MemberViewModels;
+using GymManagementSystem.BLL.Common;
 using GymManagementSystem.DAL.Models;
-using GymManagementSystem.DAL.Models.ValueObjects;
-using GymManagementSystem.DAL.Repositories;
 using GymManagementSystem.DAL.Repositories.Interfaces;
 
-namespace GymManagementSystem.BusinessLogic.Services.Classes
+namespace GymManagementSystem.BLL.Services.Classes
 {
     public class MemberService : IMemberService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public MemberService(IUnitOfWork unitOfWork)
+        public MemberService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<Result<IEnumerable<MemberViewModel>>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var members = await _unitOfWork.Members.GetAllAsync(cancellationToken);
 
-            var viewModels = members.Select(m => new MemberViewModel
-            {
-                Id = m.Id,
-                Name = m.Name,
-                Email = m.Email,
-                Phone = m.Phone,
-                Gender = m.Gender.ToString(),
-                PhotoUrl = m.Photo,
-                JoinDate = m.JoinDate
-            });
+
+            var viewModels = _mapper.Map<IEnumerable<MemberViewModel>>(members);
 
             return Result<IEnumerable<MemberViewModel>>.Ok(viewModels);
         }
@@ -44,23 +35,16 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (member == null)
                 return Result<MemberDetailsViewModel>.NotFound($"Member with ID {id} was not found.");
 
+
+            var viewModel = _mapper.Map<MemberDetailsViewModel>(member);
+
+
             var today = DateTime.UtcNow;
             var activeMembership = member.Memberships.FirstOrDefault(m => m.StartDate <= today && m.EndDate >= today);
 
-            var viewModel = new MemberDetailsViewModel
-            {
-                Id = member.Id,
-                Name = member.Name,
-                PhotoUrl = member.Photo,
-                Email = member.Email,
-                Phone = member.Phone,
-                Gender = member.Gender.ToString(),
-                DateOfBirth = member.DateOfBirth.ToShortDateString(),
-                Address = $"{member.Address.BuildingNumber} - {member.Address.Street} - {member.Address.City}",
-                PLanName = activeMembership?.Plan.Name ?? "No Active Plan",
-                MembershipEndDate = activeMembership?.EndDate.ToShortDateString() ?? "-",
-                MembershipStartDate = activeMembership?.StartDate.ToShortDateString() ?? "-"
-            };
+            viewModel.PLanName = activeMembership?.Plan.Name ?? "No Active Plan";
+            viewModel.MembershipStartDate = activeMembership?.StartDate.ToShortDateString() ?? "-";
+            viewModel.MembershipEndDate = activeMembership?.EndDate.ToShortDateString() ?? "-";
 
             return Result<MemberDetailsViewModel>.Ok(viewModel);
         }
@@ -71,16 +55,8 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (member is null)
                 return Result<EditMemberViewModel>.NotFound($"Member with ID {id} was not found.");
 
-            var editModel = new EditMemberViewModel
-            {
-                Name = member.Name,
-                Email = member.Email,
-                Phone = member.Phone,
-                Street = member.Address.Street,
-                City = member.Address.City,
-                BuildingNumber = member.Address.BuildingNumber,
-                Photo = member.Photo
-            };
+
+            var editModel = _mapper.Map<EditMemberViewModel>(member);
 
             return Result<EditMemberViewModel>.Ok(editModel);
         }
@@ -91,13 +67,8 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (record is null)
                 return Result<HealthRecordViewModel>.NotFound("Health record not found for this member.");
 
-            var viewModel = new HealthRecordViewModel
-            {
-                Weight = record.Weight,
-                BloodType = record.BloodType,
-                Height = record.Height,
-                Note = record.Notes
-            };
+
+            var viewModel = _mapper.Map<HealthRecordViewModel>(record);
 
             return Result<HealthRecordViewModel>.Ok(viewModel);
         }
@@ -110,28 +81,9 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (emailExists) return Result.Fail("This email address is already taken.", ResultKind.Conflict);
             if (phoneExists) return Result.Fail("This phone number is already registered.", ResultKind.Conflict);
 
-            var member = new Member
-            {
-                Name = model.Name,
-                Email = model.Email,
-                Phone = model.Phone,
-                DateOfBirth = model.DateOfBirth,
-                Gender = model.Gender,
-                JoinDate = DateOnly.FromDateTime(DateTime.UtcNow),
-                Address = new Address
-                {
-                    BuildingNumber = model.BuildingNumber,
-                    City = model.City,
-                    Street = model.Street
-                },
-                HealthRecord = new HealthRecord
-                {
-                    Weight = model.HealthRecordViewModel.Weight,
-                    Height = model.HealthRecordViewModel.Height,
-                    Notes = model.HealthRecordViewModel.Note,
-                    BloodType = model.HealthRecordViewModel.BloodType,
-                }
-            };
+
+            var member = _mapper.Map<Member>(model);
+            member.JoinDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
             await _unitOfWork.Members.AddAsync(member);
             var rowsAffected = await _unitOfWork.SaveChangesAsync();
@@ -149,11 +101,8 @@ namespace GymManagementSystem.BusinessLogic.Services.Classes
             if (await _unitOfWork.Members.AnyAsync(m => m.Phone == model.Phone && m.Id != id, cancellationToken))
                 return Result.Fail("Phone number is already registered to another member.", ResultKind.Conflict);
 
-            member.Email = model.Email;
-            member.Phone = model.Phone;
-            member.Address.City = model.City;
-            member.Address.BuildingNumber = model.BuildingNumber;
-            member.Address.Street = model.Street;
+
+            _mapper.Map(model, member);
             member.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.Members.Update(member);
