@@ -1,0 +1,87 @@
+﻿@model DeleteSessionViewModel
+@{
+    ViewData["Title"] = "Delete Session";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div id="Alert" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <strong>Error!</strong> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card p-4 p-md-5 shadow text-center">
+
+                <p class="fs-3 text-primary-color mb-2">Delete @Model.CategoryName?</p>
+                <p class="text-muted mb-4">Review session details before confirming.</p>
+
+                <div class="text-start mb-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Description</small>
+                                <strong>@Model.Description</strong>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Trainer</small>
+                                <strong>@Model.TrainerName</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Start Time</small>
+                                <strong>@Model.StartTime</strong>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">End Time</small>
+                                <strong>@Model.EndTime</strong>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded">
+                                <small class="text-muted d-block mb-1">Capacity</small>
+                                <strong>@Model.Capacity</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning text-start" role="alert">
+                    <strong>Warning!</strong> This session will be deactivated and hidden from active records.
+                </div>
+
+                <form asp-controller="Sessions" asp-action="Delete" asp-route-id="@Model.Id" method="post" class="mt-4">
+                    <div class="buttons d-flex justify-content-between gap-3">
+                        <a asp-controller="Sessions" asp-action="Index" class="btn-outline flex-fill">NO</a>
+                        <button type="submit" class="btn-fill flex-fill">Yes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const alertBox = document.getElementById("Alert");
+            if (alertBox) {
+                setTimeout(() => {
+                    alertBox.style.transition = "opacity 0.5s ease";
+                    alertBox.style.opacity = "0";
+                    setTimeout(() => alertBox.remove(), 500);
+                }, 3000);
+            }
+        });
+    </script>
+}
