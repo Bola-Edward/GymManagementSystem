@@ -1,0 +1,59 @@
+﻿@model CreateBookingViewModel
+
+@{
+    ViewData["Title"] = "Create Booking";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-plus me-2"></i>Booking Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                       
+                        <input type="hidden" asp-for="SessionId" value="@ViewBag.SessionId" />
+
+                        <div class="mb-4">
+                            <label asp-for="MemberId" class="form-label fw-semibold">Member</label>
+                            <select asp-for="MemberId" asp-items="ViewBag.Members" class="form-select" id="MemberId">
+                                <option value="">-- Select Member --</option>
+                            </select>
+                            <span asp-validation-for="MemberId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Create Booking
+                            </button>
+                            <a asp-action="GetMembersForUpcomingSession" asp-route-id="@ViewBag.SessionId" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Back to List
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+   
+    <script>
+        $(document).ready(function() {
+            $('#MemberId').select2({
+                placeholder: "Select a member",
+                allowClear: true,
+                width: '100%'
+            });
+        });
+    </script>
+}
