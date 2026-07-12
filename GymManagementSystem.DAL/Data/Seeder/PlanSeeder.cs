@@ -1,4 +1,6 @@
-﻿using GymManagementSystem.Data.Contexts;
+﻿using GymManagementSystem.DAL.Data.Seeder;
+using GymManagementSystem.DAL.Data.Seeder.Models;
+using GymManagementSystem.Data.Contexts;
 using GymManagementSystem.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,7 +11,6 @@ namespace GymManagementSystem.Data.Seeder
         public static async Task SeedAsync(GymDbContext dbContext)
         {
 
-
             bool hasAnyPlans = await dbContext.Plans.AnyAsync();
 
             if (hasAnyPlans)
@@ -17,47 +18,25 @@ namespace GymManagementSystem.Data.Seeder
                 return;
             }
 
-            List<Plan> plans = new List<Plan>()
+            var seederPlans = SeedJsonLoader.LoadSeedData<PlanSeedModel>("plans.json");
+
+
+            if (seederPlans != null && seederPlans.Any())
             {
-                new Plan()
+
+                var plansEntities = seederPlans.Select(model => new Plan
                 {
-                    Name = "Basic",
-                    Description = "Basic gym access",
-                    DurationDays = 30,
-                    Price = 300,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now,
-                },
-
-                new Plan()
-                {
-                    Name = "Silver",
-                    Description = "Gym access with cardio classes",
-                    DurationDays = 60,
-                    Price = 500,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now,
-                },
-
-                new Plan()
-                {
-                    Name = "Gold",
-                    Description = "Full Gym access with trainer",
-                    DurationDays = 90,
-                    Price = 900,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now,
-                }
+                    Name = model.Name,
+                    Price = model.Price,
+                    DurationDays = model.DurationDays,
+                    IsActive = model.IsActive,
+                    CreatedAt = System.DateTime.Now
+                }).ToList();
 
 
-            };
-
-            // AddRangeAsync is used to add multiple entities to the context in a single call,
-            // which can be more efficient than adding them one by one using AddAsync.
-            // It reduces the number of database round-trips and can improve performance when seeding large amounts of data.
-            await dbContext.Plans.AddRangeAsync(plans);
-            // SaveChangesAsync is used to persist the changes made to the context to the database.
-            await dbContext.SaveChangesAsync();
+                await dbContext.Plans.AddRangeAsync(plansEntities);
+                await dbContext.SaveChangesAsync();
+            }
         }
     }
 }

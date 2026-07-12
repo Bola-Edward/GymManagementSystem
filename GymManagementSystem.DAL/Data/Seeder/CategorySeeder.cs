@@ -1,4 +1,5 @@
-﻿using GymManagementSystem.DAL.Models;
+﻿using GymManagementSystem.DAL.Data.Seeder.Models;
+using GymManagementSystem.DAL.Models;
 using GymManagementSystem.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,20 +11,24 @@ namespace GymManagementSystem.DAL.Data.Seeder
         {
             if (await dbContext.Categories.AnyAsync())
             {
-                return; // Categories already seeded
+                return;
             }
 
-            var categories = new List<Category>
-            {
-                new Category { Name = "Yoga" },
-                new Category { Name = "Cardio" },
-                new Category { Name = "Strength Training" },
-                new Category { Name = "CrossFit" },
-                new Category { Name = "Boxing" }
-            };
+            var seederCategoryModels = SeedJsonLoader.LoadSeedData<CategorySeedModel>("categories.json");
 
-            await dbContext.AddRangeAsync(categories);
-            await dbContext.SaveChangesAsync();
+            if (seederCategoryModels != null && seederCategoryModels.Any())
+            {
+
+                var categoriesEntities = seederCategoryModels.Select(model => new Category
+                {
+                    Name = model.Name
+
+                }).ToList();
+
+
+                await dbContext.Categories.AddRangeAsync(categoriesEntities);
+                await dbContext.SaveChangesAsync();
+            }
         }
     }
 }
