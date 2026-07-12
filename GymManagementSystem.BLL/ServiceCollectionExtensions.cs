@@ -12,10 +12,9 @@ namespace GymManagementSystem.BLL
     {
         public static IServiceCollection AddBusinessLogic(this IServiceCollection services)
         {
-            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+            services.AddScoped<IPlanService, PlanService>();
             services.AddScoped<IMemberService, MemberService>();
-            IServiceCollection serviceCollection = services.AddScoped<IPlanService, PlanService>();
             services.AddScoped<ITrainerService, TrainerService>();
             services.AddScoped<ISessionService, SessionService>();
             services.AddScoped<IMembershipService, MembershipService>();

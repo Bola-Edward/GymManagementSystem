@@ -23,6 +23,7 @@ namespace GymManagementSystem.DAL
                 options.AddInterceptors(sp.GetRequiredService<AuditColumnsInterceptor>());
             });
 
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             return services;
         }
