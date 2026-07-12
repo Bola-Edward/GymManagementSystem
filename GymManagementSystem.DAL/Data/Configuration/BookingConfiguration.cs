@@ -34,10 +34,6 @@ namespace GymManagementSystem.DAL.Data.Configuration
             }).IsUnique().HasFilter("[IsDeleted] = 0");
 
 
-            builder.ToTable(t =>
-            {
-                t.HasCheckConstraint("CK_Booking_Date", "[Date] >= GETDATE()");
-            });
 
             builder.HasQueryFilter(B => !B.IsDeleted);
         }
