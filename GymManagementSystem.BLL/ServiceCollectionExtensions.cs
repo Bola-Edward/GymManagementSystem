@@ -18,6 +18,7 @@ namespace GymManagementSystem.BLL
             IServiceCollection serviceCollection = services.AddScoped<IPlanService, PlanService>();
             services.AddScoped<ITrainerService, TrainerService>();
             services.AddScoped<ISessionService, SessionService>();
+            services.AddScoped<IMembershipService, MembershipService>();
 
             services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MemberMappingProfile).Assembly));
 
