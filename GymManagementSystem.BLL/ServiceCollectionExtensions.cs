@@ -20,6 +20,7 @@ namespace GymManagementSystem.BLL
             services.AddScoped<ISessionService, SessionService>();
             services.AddScoped<IMembershipService, MembershipService>();
             services.AddScoped<IBookingService, BookingService>();
+            services.AddScoped<IDashboardService, DashboardService>();
 
             services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MemberMappingProfile).Assembly));
 
