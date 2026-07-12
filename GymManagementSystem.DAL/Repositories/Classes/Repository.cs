@@ -2,10 +2,8 @@
 using GymManagementSystem.DAL.Repositories.Interfaces;
 using GymManagementSystem.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
+
 
 namespace GymManagementSystem.DAL.Repositories.Classes
 {
@@ -107,10 +105,13 @@ namespace GymManagementSystem.DAL.Repositories.Classes
         }
 
 
-        public async Task<int> DeleteAsync(TEntity entity)
+        public Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null, CancellationToken cancellationToken = default)
         {
-            _dbSet.Remove(entity);
-            return await _dbContext.SaveChangesAsync();
+            var query = _dbSet.AsNoTracking();
+
+            return predicate is null
+                ? query.CountAsync(cancellationToken)
+                : query.CountAsync(predicate, cancellationToken);
         }
     }
 }

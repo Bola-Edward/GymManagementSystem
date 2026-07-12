@@ -21,6 +21,7 @@ namespace GymManagementSystem.DAL.Repositories.Interfaces
 
         Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellation = default);
 
+
         Task AddAsync(TEntity entity, CancellationToken cancellationToken = default);
 
         void Update(TEntity entity);
@@ -30,6 +31,6 @@ namespace GymManagementSystem.DAL.Repositories.Interfaces
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
-        Task<int> DeleteAsync(TEntity entity);
+        Task<int> CountAsync(Expression<Func<TEntity, bool>>? predicate = null, CancellationToken cancellationToken = default);
     }
 }
