@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
+using GymManagementSystem.BLL.Attachments;
+using GymManagementSystem.BLL.Common;
 using GymManagementSystem.BLL.Services.Interfaces;
 using GymManagementSystem.BLL.ViewModels.MemberViewModels;
-using GymManagementSystem.BLL.Common;
 using GymManagementSystem.DAL.Models;
 using GymManagementSystem.DAL.Repositories.Interfaces;
 
@@ -11,11 +12,13 @@ namespace GymManagementSystem.BLL.Services.Classes
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAttachmentService _attachmentService;
 
-        public MemberService(IUnitOfWork unitOfWork, IMapper mapper)
+        public MemberService(IUnitOfWork unitOfWork, IMapper mapper, IAttachmentService attachmentService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _attachmentService = attachmentService;
         }
 
         public async Task<Result<IEnumerable<MemberViewModel>>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -75,6 +78,7 @@ namespace GymManagementSystem.BLL.Services.Classes
 
         public async Task<Result> CreateAsync(CreateMemberViewModel model, CancellationToken ct = default)
         {
+
             var emailExists = await _unitOfWork.Members.IsEmailTakenAsync(model.Email, ct);
             var phoneExists = await _unitOfWork.Members.IsPhoneTakenAsync(model.Phone, ct);
 
@@ -82,12 +86,42 @@ namespace GymManagementSystem.BLL.Services.Classes
             if (phoneExists) return Result.Fail("This phone number is already registered.", ResultKind.Conflict);
 
 
+            string? imageStoragePath = null;
+
+            if (model.File != null)
+            {
+
+                var uploadResult = await _attachmentService.SaveAsync(model.File, AttachmentsCategories.Members, ct);
+
+
+                if (!uploadResult.Success)
+                {
+                    return Result.Fail(uploadResult.Error, ResultKind.Conflict);
+                }
+
+                imageStoragePath = uploadResult.Value;
+            }
+
+
             var member = _mapper.Map<Member>(model);
+
+
+            member.Photo = imageStoragePath;
+
             member.JoinDate = DateOnly.FromDateTime(DateTime.UtcNow);
+
 
             await _unitOfWork.Members.AddAsync(member);
             var rowsAffected = await _unitOfWork.SaveChangesAsync();
-            return rowsAffected > 0 ? Result.Ok() : Result.Fail("Failed to create member.", ResultKind.Conflict);
+
+
+            if (rowsAffected <= 0 && imageStoragePath != null)
+            {
+                await _attachmentService.DeleteAsync(imageStoragePath, ct);
+                return Result.Fail("Failed to create member.", ResultKind.Conflict);
+            }
+
+            return Result.Ok();
         }
 
         public async Task<Result> UpdateAsync(int id, EditMemberViewModel model, CancellationToken cancellationToken = default)
@@ -102,11 +136,35 @@ namespace GymManagementSystem.BLL.Services.Classes
                 return Result.Fail("Phone number is already registered to another member.", ResultKind.Conflict);
 
 
+            string? oldImagePath = null;
+
+            if (model.File != null)
+            {
+
+                var uploadResult = await _attachmentService.SaveAsync(model.File, "members", cancellationToken);
+
+                if (!uploadResult.Success)
+                {
+                    return Result.Fail(uploadResult.Error, ResultKind.Conflict);
+                }
+
+
+                oldImagePath = member.Photo;
+
+                member.Photo = uploadResult.Value;
+            }
+
+
             _mapper.Map(model, member);
             member.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.Members.Update(member);
             var result = await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            if (result > 0 && !string.IsNullOrEmpty(oldImagePath))
+            {
+                await _attachmentService.DeleteAsync(oldImagePath, cancellationToken);
+            }
 
             return result > 0 ? Result.Ok() : Result.Fail("No changes were saved.", ResultKind.Conflict);
         }

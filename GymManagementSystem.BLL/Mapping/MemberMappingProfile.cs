@@ -60,6 +60,10 @@ namespace GymManagementSystem.BLL.Mapping
                 .ForPath(dest => dest.Photo, opt => opt.MapFrom(src => src.Photo));
 
 
+            CreateMap<EditMemberViewModel, Member>()
+                .ForMember(dest => dest.Photo, opt => opt.Ignore());
+
+
             CreateMap<HealthRecord, HealthRecordViewModel>()
                 .ForMember(dest => dest.Note, opt => opt.MapFrom(src => src.Notes))
                 .ReverseMap()

@@ -1,21 +1,23 @@
 ﻿@model MemberDetailsViewModel
 
-
 <div class="container">
     <main role="main" class="pb-3">
         <div class="container mt-5">
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="card card-details border-0 p-2 shadow">
+
                         <div class="text-center mt-3">
-                            <img src="@(string.IsNullOrWhiteSpace(Model.PhotoUrl) ? Url.Content("~/images/user.png") : Model.PhotoUrl)"
-                                 alt="MemberName"
+                            <img src="@(string.IsNullOrWhiteSpace(Model.PhotoUrl) ? Url.Content("~/images/user.png") : Url.Content($"~/Attachments/{Model.PhotoUrl}"))"
+                                 alt="@Model.Name"
                                  class="rounded-circle"
                                  style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #fff; margin-top: -60px;" />
                         </div>
+
                         <div class="card-body text-center">
                             <h2 class="mb-1 text-primary-color">@Model.Name</h2>
                             <h4 class="mb-2 pb-1 border-bottom d-block">@(Model.PLanName ?? "No Plan") </h4>
+
                             <div class="mt-4 text-start">
                                 <div class="row g-3">
                                     <div class="col-12">
@@ -72,6 +74,5 @@
                 </div>
             </div>
         </div>
-
     </main>
 </div>

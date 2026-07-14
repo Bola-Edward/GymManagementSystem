@@ -48,9 +48,14 @@ else if (TempData["ErrorMessage"] != null)
                         <tr>
                             <td>
                                 <span class="avatar">
-
-                                    <img src="@(string.IsNullOrWhiteSpace(member.PhotoUrl) ? Url.Content("~/images/user.png") : member.PhotoUrl)"
-                                         alt="@member.Name" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+                                    @if (string.IsNullOrWhiteSpace(member.PhotoUrl))
+                                    {
+                                        <img src="~/images/user.png" alt="@member.Name" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <img src="~/Attachments/@member.PhotoUrl" alt="@member.Name" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;" />
+                                    }
                                 </span>
                             </td>
                             <td><span>@member.Name</span></td>
