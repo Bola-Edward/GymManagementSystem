@@ -1,10 +1,12 @@
 using GymManagementSystem.BLL.Services.Interfaces;
 using GymManagementSystem.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace GymManagementSystem.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly IDashboardService _dashboardService;

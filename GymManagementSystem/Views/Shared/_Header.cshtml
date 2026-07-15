@@ -1,8 +1,8 @@
 ﻿@{
-   
+
     var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
 
-  
+ 
     string Active(string name) =>
         string.Equals(controller, name, StringComparison.OrdinalIgnoreCase) ? "active" : "";
 }
@@ -23,9 +23,14 @@
                     <li class="nav-item">
                         <a class="nav-link px-3 py-2 mx-2 fw-bolder fs-5 @Active("Home")" aria-current="@(Active("Home") == "active" ? "page" : null)" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link px-3 py-2 mx-2 fw-bolder fs-5 @Active("Members")" aria-current="@(Active("Members") == "active" ? "page" : null)" asp-controller="Members" asp-action="Index">Members</a>
-                    </li>
+                    @if (User.IsInRole("SuperAdmin"))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link px-3 py-2 mx-2 fw-bolder fs-5 @Active("Members")" aria-current="@(Active("Members") == "active" ? "page" : null)" asp-controller="Members" asp-action="Index">Members</a>
+                        </li>
+                    }
+
+                    
                     <li class="nav-item">
                         <a class="nav-link px-3 py-2 mx-2 fw-bolder fs-5 @Active("Trainers")" aria-current="@(Active("Trainers") == "active" ? "page" : null)" asp-controller="Trainers" asp-action="Index">Trainers</a>
                     </li>
@@ -40,16 +45,32 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link px-3 py-2 mx-2 fw-bolder fs-5 @Active("Bookings")" aria-current="@(Active("Bookings") == "active" ? "page" : null)" asp-controller="Bookings" asp-action="Index">Sessions Schedule</a>
-                    </li>
-                    <li class="nav-item">
-                        <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-link nav-link px-3 py-2 mx-2 fw-bolder fs-5 text-black-alternative">
-                                Logout
-                            </button>
-                        </form>
-                    </li>
-                </ul>
+
+                  
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-link nav-link px-3 py-2 mx-2 fw-bolder fs-5 text-black-alternative">
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <form asp-action="Login" asp-controller="Account" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-link nav-link px-3 py-2 mx-2 fw-bolder fs-5 text-black-alternative">
+                                        Login
+                                    </button>
+                                </form>
+                            </li>
+                        }
+
+                    
+                    </ul>
+                </div>
             </div>
-        </div>
-    </nav>
-</header>
+        </nav>
+    </header>
