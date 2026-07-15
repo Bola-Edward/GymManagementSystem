@@ -1,10 +1,12 @@
-﻿using GymManagementSystem.DAL.Models;
+﻿using GymManagementSystem.DAL.Data.Identity;
+using GymManagementSystem.DAL.Models;
 using GymManagementSystem.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace GymManagementSystem.Data.Contexts
 {
-    public class GymDbContext : DbContext
+    public class GymDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
     {
         public GymDbContext(DbContextOptions options) : base(options) { }
 
@@ -13,7 +15,7 @@ namespace GymManagementSystem.Data.Contexts
             // Apply all configurations from the assembly containing GymDbContext
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(GymDbContext).Assembly);
 
-
+            base.OnModelCreating(modelBuilder);
         }
 
         public DbSet<Plan> Plans { get; set; }
