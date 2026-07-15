@@ -15,14 +15,12 @@ namespace GymManagementSystem
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            #region Services Registration
 
-
-            // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+                ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
             builder.Services.AddGymDataAccess(connectionString);
             builder.Services.AddBusinessLogic();
@@ -34,10 +32,9 @@ namespace GymManagementSystem
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequireUppercase = true;
                 options.Password.RequireLowercase = true;
-
-            }).AddEntityFrameworkStores<GymDbContext>()
+            })
+            .AddEntityFrameworkStores<GymDbContext>()
             .AddDefaultTokenProviders();
-
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
@@ -47,37 +44,60 @@ namespace GymManagementSystem
                 options.ExpireTimeSpan = TimeSpan.FromHours(10);
                 options.SlidingExpiration = true;
             });
-
+            #endregion
 
             var app = builder.Build();
 
-            await using var scope = app.Services.CreateAsyncScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<GymDbContext>();
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
-            await DatabaseSeeder.SeedAllAsync(userManager, roleManager, app.Configuration, dbContext);
+            #region Database Initialization
 
+            await using (var scope = app.Services.CreateAsyncScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var dbContext = services.GetRequiredService<GymDbContext>();
+                    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                    var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
 
-            // Configure the HTTP request pipeline.
+                    if (dbContext.Database.GetPendingMigrations().Any())
+                    {
+                        await dbContext.Database.MigrateAsync();
+                    }
+
+                    await DatabaseSeeder.SeedAllAsync(userManager, roleManager, app.Configuration, dbContext);
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred during database migration or seeding.");
+                }
+            }
+
+            #endregion
+
+            #region Middleware Pipeline
+
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
+
+            app.MapStaticAssets();
+
             app.UseRouting();
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}")
                 .WithStaticAssets();
+
+            #endregion
 
             app.Run();
         }
