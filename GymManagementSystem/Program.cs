@@ -1,8 +1,10 @@
 using GymManagementSystem.BLL;
 using GymManagementSystem.DAL;
+using GymManagementSystem.DAL.Data.Identity;
 using GymManagementSystem.DAL.Interceptors;
 using GymManagementSystem.Data.Contexts;
 using GymManagementSystem.Data.Seeder;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace GymManagementSystem
@@ -29,7 +31,10 @@ namespace GymManagementSystem
 
             await using var scope = app.Services.CreateAsyncScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<GymDbContext>();
-            await DatabaseSeeder.SeedAllAsync(dbContext);
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
+            var configuration = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+            await DatabaseSeeder.SeedAllAsync(userManager, roleManager, app.Configuration, dbContext);
 
 
             // Configure the HTTP request pipeline.
