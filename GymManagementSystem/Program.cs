@@ -27,6 +27,28 @@ namespace GymManagementSystem
             builder.Services.AddGymDataAccess(connectionString);
             builder.Services.AddBusinessLogic();
 
+            builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+                options.Password.RequiredLength = 8;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireLowercase = true;
+
+            }).AddEntityFrameworkStores<GymDbContext>()
+            .AddDefaultTokenProviders();
+
+
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = "/Account/Login";
+                options.AccessDeniedPath = "/Account/AccessDenied";
+                options.LogoutPath = "/Account/Logout";
+                options.ExpireTimeSpan = TimeSpan.FromHours(10);
+                options.SlidingExpiration = true;
+            });
+
+
             var app = builder.Build();
 
             await using var scope = app.Services.CreateAsyncScope();
@@ -48,6 +70,7 @@ namespace GymManagementSystem
             app.UseHttpsRedirection();
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapStaticAssets();
